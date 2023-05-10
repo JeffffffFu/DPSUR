@@ -12,7 +12,7 @@ You can install all requirements with:
 pip install -r requirements.txt
 ```
 
-[//]: # (The code was tested with `python 3.7`, `torch 1.6` and `cpu`.)
+
 
 
 ## Results

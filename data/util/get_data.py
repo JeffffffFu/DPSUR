@@ -292,7 +292,6 @@ def get_scattered_dataset(loader, scattering, device, data_size):
     data = torch.utils.data.TensorDataset(scatters, targets)
     return data
 
-#组建这个data_loader是有做泊松采样的
 def get_scattered_loader(loader, scattering, device, drop_last=False, sample_batches=False):
     # pre-compute a scattering transform (if there is one) and return
     # a DataLoader
