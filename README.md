@@ -46,10 +46,10 @@ python main.py --algorithm DPSUR --dataset_name MNIST  --sigma 1.35 --lr 2.0 --b
 ### FMNIST
 
 ```bash
-python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 4.0 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=8 --use_scattering --eps=1.0
-python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=8 --use_scattering --eps=2.0
-python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=8 --use_scattering --eps=3.0
-python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=8 --use_scattering --eps=4.0
+python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 4.0 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=1.0
+python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=2.0
+python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=3.0
+python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --batch_size 2048 --size_valid 5000 --C_v=0.001 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
 ```
 
 ### CIFAR10
