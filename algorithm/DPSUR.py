@@ -17,13 +17,13 @@ from data.util.sampling import  get_data_loaders_possion
 
 from data.util.dividing_validation_data import dividing_validation_set, dividing_validation_set_for_IMDB
 import os
-def DPSUR(dataset_name,train_dataset_name, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,size_valid,bs_valid,C_v,beta,device):
+def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,size_valid,bs_valid,C_v,beta,device):
 
     orders = [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64))+ [128, 256, 512]
     if dataset_name=='IMDB':
-        train_data, valid_data = dividing_validation_set_for_IMDB(train_dataset_name, size_valid)
+        train_data, valid_data = dividing_validation_set_for_IMDB(train_dataset, size_valid)
     else:
-        train_data, valid_data = dividing_validation_set(train_dataset_name, size_valid)
+        train_data, valid_data = dividing_validation_set(train_dataset, size_valid)
     test_dl = torch.utils.data.DataLoader(
         test_data, batch_size=batch_size, shuffle=False, pin_memory=True)
 
@@ -40,7 +40,7 @@ def DPSUR(dataset_name,train_dataset_name, test_data, model, batch_size, lr, mom
             scattering.to(device)
         else:
             scattering = None
-            K = 3 if len(train_dataset_name.data.shape) == 4 else 1
+            K = 3 if len(train_dataset.data.shape) == 4 else 1
 
         rdp_norm=0.
         if input_norm == "BN":
@@ -92,10 +92,10 @@ def DPSUR(dataset_name,train_dataset_name, test_data, model, batch_size, lr, mom
     iter=1
     epsilon=0.
 
-    epsilon_budget_for_train=epsilon_budget/(len(train_data)/len(train_dataset_name))
+    epsilon_budget_for_train=epsilon_budget/(len(train_data)/len(train_dataset))
     print("privacy budget of training set:",epsilon_budget_for_train)
 
-    epsilon_budget_for_valid_in_all_updates=epsilon_budget/(len(valid_data)/len(train_dataset_name))
+    epsilon_budget_for_valid_in_all_updates=epsilon_budget/(len(valid_data)/len(train_dataset))
     print("epsilon_budget_for_valid_in_all_updates:",epsilon_budget_for_valid_in_all_updates)
 
     max_number_of_updates = get_max_steps(epsilon_budget_for_train, delta, batch_size / len(train_data), sigma, orders)
