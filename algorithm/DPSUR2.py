@@ -17,23 +17,18 @@ from data.util.sampling import  get_data_loaders_possion
 
 from data.util.dividing_validation_data import dividing_validation_set, dividing_validation_set_for_IMDB
 import os
-def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,size_valid,bs_valid,C_v,beta,device):
+def DPSUR2(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_for_valid,device):
 
     orders = [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64))+ [128, 256, 512]
-    if dataset_name=='IMDB':
-        train_data, valid_data = dividing_validation_set_for_IMDB(train_dataset, size_valid)
-    else:
-        train_data, valid_data = dividing_validation_set(train_dataset, size_valid)
+
     test_dl = torch.utils.data.DataLoader(
         test_data, batch_size=batch_size, shuffle=False, pin_memory=True)
 
     if dataset_name != 'IMDB':
 
         train_loader = torch.utils.data.DataLoader(
-            train_data, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+            train_dataset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
 
-        valid_loader = torch.utils.data.DataLoader(
-            valid_data, batch_size=bs_valid, shuffle=True, num_workers=1, pin_memory=True)
 
         if use_scattering:
             scattering, K, _ = get_scatter_transform(dataset_name)
@@ -50,8 +45,8 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
                                                        scattering,
                                                        K,
                                                        device,
-                                                       len(train_data),
-                                                       len(train_data),
+                                                       len(train_dataset),
+                                                       len(train_dataset),
                                                        noise_multiplier=bn_noise_multiplier,
                                                        orders=orders,
                                                        save_dir=save_dir)
@@ -60,8 +55,7 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
             model = CNNS[dataset_name](K, input_norm=input_norm, num_groups=num_groups, size=None)
 
         model.to(device)
-        train_data_scattered = get_scattered_dataset(train_loader, scattering, device, len(train_data))
-        valid_data_scattered = get_scattered_dataset(valid_loader, scattering, device, len(valid_data))
+        train_data_scattered = get_scattered_dataset(train_loader, scattering, device, len(train_dataset))
         test_dl = get_scattered_loader(test_dl, scattering, device)
 
         optimizer = DPSGD_Optimizer(
@@ -91,41 +85,35 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
     t = 1
     iter=1
     best_iter=1
+    best_test_acc=0.
     epsilon=0.
 
-    epsilon_budget_for_train=epsilon_budget/(len(train_data)/len(train_dataset))
-    print("privacy budget of training set:",epsilon_budget_for_train)
-
-    epsilon_budget_for_valid_in_all_updates=epsilon_budget/(len(valid_data)/len(train_dataset))
-    print("epsilon_budget_for_valid_in_all_updates:",epsilon_budget_for_valid_in_all_updates)
-
-    max_number_of_updates = get_max_steps(epsilon_budget_for_train, delta, batch_size / len(train_data), sigma, orders)
-    print("max_number_of_updates:", max_number_of_updates)
-
-    epsilon_budget_for_train_in_one_iter,_=   apply_dp_sgd_analysis(batch_size / len(train_data), sigma, 1, orders,delta)
-    print("epsilon_budget_for_train_in_one_iter:",epsilon_budget_for_train_in_one_iter)
-
-    sigma_for_valid = get_min_sigma(epsilon_budget_for_valid_in_all_updates, len(train_data) / len(valid_data) * epsilon_budget_for_train_in_one_iter,delta, bs_valid / len(valid_data), max_number_of_updates,orders)
-
-    while epsilon<epsilon_budget_for_train:
+    while epsilon<epsilon_budget:
 
         if dataset_name=='IMDB':
-            epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, t, orders, delta)
-            train_dl = minibatch_loader_for_train(train_data)
-            valid_dl = minibatch_loader_for_valid(valid_data)
+            rdp_train = compute_rdp(batch_size / len(train_dataset), sigma, t, orders)
+            rdp_valid = compute_rdp(bs_valid / len(train_dataset), sigma_for_valid, t, orders)
+            epsilon, best_alpha = compute_eps(orders, rdp_train + rdp_valid, delta)
+
+            train_dl = minibatch_loader_for_train(train_dataset)
+            valid_dl = minibatch_loader_for_valid(train_dataset)
             for id, (data, target) in enumerate(train_dl):
                 optimizer.minibatch_size = len(data)
 
         else:
             if input_norm == "BN":
-                rdp = compute_rdp(batch_size / len(train_data), sigma, t, orders)
-                epsilon, best_alpha = compute_eps(orders, rdp + rdp_norm, delta)
+                rdp_train = compute_rdp(batch_size / len(train_dataset), sigma, t, orders)
+                rdp_valid = compute_rdp(bs_valid / len(train_dataset), sigma_for_valid, t, orders)
+
+                epsilon, best_alpha = compute_eps(orders, rdp_train + rdp_valid+ rdp_norm, delta)
 
             else:
-                epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, t, orders, delta)
+                rdp_train = compute_rdp(batch_size / len(train_dataset), sigma, t, orders)
+                rdp_valid = compute_rdp(bs_valid / len(train_dataset), sigma_for_valid, t, orders)
+                epsilon, best_alpha = compute_eps(orders, rdp_train+rdp_valid, delta)
 
             train_dl = minibatch_loader_for_train(train_data_scattered)
-            valid_dl = minibatch_loader_for_valid(valid_data_scattered)
+            valid_dl = minibatch_loader_for_valid(train_data_scattered)
             for id, (data, target) in enumerate(train_dl):
                 optimizer.minibatch_size = len(data)
 

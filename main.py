@@ -9,6 +9,7 @@ from algorithm.DPSGD import DPSGD
 from algorithm.DPSGD_HF import DPSGD_HF
 from algorithm.DPSGD_TS import DPSGD_TS
 from algorithm.DPSUR import DPSUR
+from algorithm.DPSUR2 import DPSUR2
 from data.util.get_data import get_data
 
 from model.get_model import get_model
@@ -17,7 +18,7 @@ from utils.dp_optimizer import  get_dp_optimizer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR'])
+    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR', 'DPSUR2'])
     parser.add_argument('--dataset_name', type=str, default="MNIST",choices=['MNIST', 'FMNIST', 'CIFAR-10', 'IMDB'])
     parser.add_argument('--lr', type=float, default=0.5)
     parser.add_argument('--momentum', type=float, default=0.9)
@@ -34,11 +35,12 @@ def main():
     parser.add_argument('--batch_size', type=int, default=256)
 
     parser.add_argument('--size_valid', type=int, default=5000)
+    parser.add_argument('--sigma_for_valid', type=float, default=1.0)
     parser.add_argument('--C_v', type=float, default=0.001)
     parser.add_argument('--bs_valid', type=int, default=256)
     parser.add_argument('--beta', type=float, default=-1.0)
 
-    parser.add_argument('--device', type=str, default='cpu',choices=['cpu', 'cuda'])
+    parser.add_argument('--device', type=str, default='cuda',choices=['cpu', 'cuda'])
 
 
     args = parser.parse_args()
@@ -60,6 +62,7 @@ def main():
     batch_size=args.batch_size
 
     size_valid=args.size_valid
+    sigma_for_valid=args.sigma_for_valid
     bs_valid=args.bs_valid
     C_v=args.C_v
     beta=args.beta
@@ -73,23 +76,26 @@ def main():
     optimizer=get_dp_optimizer(dataset_name,lr,momentum,C_t,sigma,batch_size,model)
 
     if algorithm=='DPSGD':
-        test_acc=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma,device)
+        test_acc,last_iter,best_acc,best_iter=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma,device)
     elif algorithm == 'DPSGD-TS':
-        test_acc=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma,device)
+        test_acc,last_iter,best_acc,best_iter=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma,device)
     elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB
-        test_acc=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
+        test_acc,last_iter,best_acc,best_iter=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
                  C_t, sigma, use_scattering, input_norm, bn_noise_multiplier, num_groups, device)
     elif algorithm == "DPSUR":
-        test_acc=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
+        test_acc,last_iter,best_acc,best_iter=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
                sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,size_valid,bs_valid,C_v,beta,device)
+    elif algorithm == "DPSUR2":
+        test_acc,last_iter,best_acc,best_iter=DPSUR2(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
+               sigma,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_for_valid,device)
     else:
         raise ValueError("this algorithm is not exist")
 
     File_Path_Csv = os.getcwd() + f"/result/csv/{algorithm}/{dataset_name}/{epsilon}//"
     if not os.path.exists(File_Path_Csv):
         os.makedirs(File_Path_Csv)
-    pd.DataFrame([test_acc]).to_csv(
-        f"{File_Path_Csv}/{str(sigma)}_{str(lr)}_{str(batch_size)}.csv",
+    pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(
+        f"{File_Path_Csv}/{str(sigma)}_{str(lr)}_{str(batch_size)}_{str(sigma_for_valid)}_{str(bs_valid)}.csv",
         index=False, header=False)
 
 if __name__=="__main__":

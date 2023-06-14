@@ -20,12 +20,18 @@ def DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon_budget, de
 
         epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, iter, orders, delta) #comupte privacy cost
         train_dl = minibatch_loader(train_data)  # possion sampling
+        for id, (data, target) in enumerate(train_dl):
+            optimizer.minibatch_size = len(data)
 
         train_loss, train_accuracy = train_with_dp(model, train_dl, optimizer,device)
         test_loss, test_accuracy = validation(model, test_dl,device)
+
+        if test_accuracy > best_test_acc:
+            best_test_acc = test_accuracy
+            best_iter = iter
 
         print(f'iters:{iter},'f'epsilon:{epsilon:.4f} |'f' Test set: Average loss: {test_loss:.4f},'f' Accuracy:({test_accuracy:.2f}%)')
         iter += 1
 
     print("------finished ------")
-    return test_accuracy
+    return test_accuracy,iter,best_test_acc,best_iter
