@@ -50,6 +50,63 @@ def get_data(name, augment=False, **kwargs):
                                     transform=transforms.Compose(
                                         [transforms.ToTensor(), normalize]
                                     ))
+
+    elif name == "CIFAR-10-Transformers":
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+
+        if augment:
+            train_transforms = [
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomCrop(32, 4),
+                transforms.ToTensor(),
+                normalize,
+            ]
+        else:
+
+            train_transforms = [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+            ]
+
+        train_set = datasets.CIFAR10(root="./data", train=True,
+                                     transform=transforms.Compose(train_transforms),
+                                     download=True)
+
+        test_set = datasets.CIFAR10(root="./data", train=False,
+                                    transform=transforms.Compose(
+                                        train_transforms
+                                    ))
+
+    elif name == "CIFAR-100-Transformers":
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+
+        if augment:
+            train_transforms = [
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomCrop(32, 4),
+                transforms.ToTensor(),
+                normalize,
+            ]
+        else:
+
+            train_transforms = [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+            ]
+
+        train_set = datasets.CIFAR100(root="./data", train=True,
+                                     transform=transforms.Compose(train_transforms),
+                                     download=True)
+
+        test_set = datasets.CIFAR100(root="./data", train=False,
+                                    transform=transforms.Compose(
+                                        train_transforms
+                                    ))
+
     elif name == "SVHN":
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])

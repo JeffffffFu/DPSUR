@@ -281,3 +281,4 @@ class CIFAR10_CNN_Tanh(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+

@@ -16,6 +16,7 @@ def DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon_budget,
     orders = [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64))+ [128, 256, 512]
     iter = 1
     epsilon = 0.
+    best_test_acc=0.
     while epsilon < epsilon_budget:
 
         epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, iter, orders, delta) #comupte privacy cost

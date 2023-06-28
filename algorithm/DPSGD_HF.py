@@ -84,6 +84,7 @@ def DPSGD_HF(dataset_name,train_data, test_data, model, batch_size, lr, momentum
             optimizer.minibatch_size = len(data)
 
         train_loss, train_accuracy = train_with_dp(model, train_dl, optimizer,device)
+
         test_loss, test_accuracy = validation(model, test_loader,device)
 
         if test_accuracy > best_test_acc:
@@ -95,7 +96,7 @@ def DPSGD_HF(dataset_name,train_data, test_data, model, batch_size, lr, momentum
 
 
     print("------ finished ------")
-    return test_accuracy,iter,best_test_acc,best_iter
+    return test_accuracy,iter,best_test_acc,best_iter,model
 
 CNNS = {
     "CIFAR-10": CIFAR10_CNN_Tanh,
