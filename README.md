@@ -22,11 +22,11 @@ For all experiments, we report the average test acc of `5` independent trials.
 
 
 | Dataset       | epsilon=1 | epsilon=2 | epsilon=3 | epsilon=4 |
-|---------------|-----------|--------|-----------|-----------|
-| MNIST         | 98.17%    | 98.74% | 98.95%    | 99.05% 
-| Fashion-MNIST | 88.01%    | 89.16% | 89.90%    | 90.38%     
-| CIFAR-10      | 64.41%    | 69.40% | 70.83%    | 71.45% 
-| IMDB          | 66.50%    | 71.02% | 71.16%    | 73.84% 
+|---------------|-----------|-----------|-----------|-----------|
+| MNIST         | 97.93%    | 98.70%    | 98.88%    | 98.95% 
+| Fashion-MNIST | 88.38%    | 89.34%    | 89.71%    | 90.18%     
+| CIFAR-10      | 64.41%    | 69.40%    | 70.83%    | 71.45% 
+| IMDB          | 66.50%    | 71.02%    | 72.16%    | 74.14% 
 
 ## Parameters
 During the DPSGD phase, for the three image datasets, we adopted the best parameters recommended 
@@ -57,7 +57,7 @@ python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma 2.15 --lr 4.0 --
 ### CIFAR10
 
 ```bash
-python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma 10.0 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.3 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=1.0
+python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma 11.0 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.3 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=1.0
 python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma 9.0  --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.3 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=2.0
 python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma 5.67 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.1 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=3.0
 python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma 5.67 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.1 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=4.0

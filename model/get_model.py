@@ -1,4 +1,4 @@
-from model.CNN import CIFAR10_CNN_Tanh, CIFAR10_CNN_Relu, MNIST_CNN_Relu, MNIST_CNN_Tanh, CNN333
+from model.CNN import CIFAR10_CNN_Tanh, CIFAR10_CNN_Relu, MNIST_CNN_Relu, MNIST_CNN_Tanh
 from model.RNN import RNN_Tanh, RNN_Relu
 import transformers
 
