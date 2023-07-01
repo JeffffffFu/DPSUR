@@ -12,6 +12,9 @@ from algorithm.DPSGD_TS import DPSGD_TS
 from algorithm.DPSUR import DPSUR
 
 from data.util.get_data import get_data
+from data.util.prepare_MIA_dataset import prepare_MIA_dataset
+from membership_inference.Inference_attacks import Member_inference_attacks
+from membership_inference.test_meminf import test_meminf
 
 from model.get_model import get_model
 from utils.dp_optimizer import  get_dp_optimizer
@@ -40,6 +43,8 @@ def main():
     parser.add_argument('--bs_valid', type=int, default=256)
     parser.add_argument('--beta', type=float, default=-1.0)
 
+    parser.add_argument('--MIA', type=bool, default=False)
+
     parser.add_argument('--device', type=str, default='cuda',choices=['cpu', 'cuda'])
 
 
@@ -66,37 +71,69 @@ def main():
     C_v=args.C_v
     beta=args.beta
 
+    MIA=args.MIA
+
     device=args.device
 
-    train_data, test_data = get_data(dataset_name, augment=False)
+    if MIA:
+        num_classes, target_train, target_test, shadow_train, shadow_test, target_model, shadow_model = prepare_MIA_dataset(
+            dataset_name, algorithm,device)
+        optimizer = get_dp_optimizer(dataset_name, lr, momentum, C_t, sigma_t, batch_size, target_model)
 
-    model=get_model(algorithm,dataset_name,device)
+        if algorithm=='DPSGD':
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm == 'DPSGD-TS':
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm == "DPSUR":
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSUR(dataset_name,target_train, target_test, target_model, batch_size, lr, momentum, epsilon,delta, C_t,
+                   sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device)
 
-    optimizer=get_dp_optimizer(dataset_name,lr,momentum,C_t,sigma_t,batch_size,model)
-
-    if algorithm=='DPSGD':
-        test_acc,last_iter,best_acc,best_iter=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
-    elif algorithm == 'DPSGD-TS':
-        test_acc,last_iter,best_acc,best_iter=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
-    elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB
-        test_acc,last_iter,best_acc,best_iter,last_model=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
-                 C_t, sigma_t, use_scattering, input_norm, bn_noise_multiplier, num_groups, device)
-    elif algorithm == "DPSUR":
-        test_acc,last_iter,best_acc,best_iter=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
-               sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,device)
+        else:
+            raise ValueError("this algorithm is not exist")
 
     else:
-        raise ValueError("this algorithm is not exist")
 
-    File_Path_Csv = os.getcwd() + f"/result/csv/{algorithm}/{dataset_name}/{epsilon}//"
-    if not os.path.exists(File_Path_Csv):
-        os.makedirs(File_Path_Csv)
+        train_data, test_data,dataset = get_data(dataset_name, augment=False)
+        model=get_model(algorithm,dataset_name,device)
+        optimizer = get_dp_optimizer(dataset_name, lr, momentum, C_t, sigma_t, batch_size, model)
 
-    torch.save(last_model.state_dict(), f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_model.pth')
+        if algorithm=='DPSGD':
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm == 'DPSGD-TS':
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
+                     C_t, sigma_t, use_scattering, input_norm, bn_noise_multiplier, num_groups, device)
+        elif algorithm == "DPSUR":
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
+                   sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device)
 
-    pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(
-        f"{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}.csv",
-        index=False, header=False)
+        else:
+            raise ValueError("this algorithm is not exist")
+
+
+
+    if MIA:
+        File_Path_Csv = os.getcwd() + f"/result/MIA/{algorithm}/{dataset_name}/{epsilon}//"
+        if not os.path.exists(File_Path_Csv):
+            os.makedirs(File_Path_Csv)
+        result_path = f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}.csv'
+        pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(result_path, index=False,header=False)
+        target_model_path=f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_model.pth'
+        torch.save(trained_model.state_dict(), target_model_path)
+
+        shadow_model_path=f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_shadow_model.pth'
+        attack_path=f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_attack.pth'
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> membership inference >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        meminf_res_train3, meminf_res_test3, meminf_res_train0, meminf_res_test0 = test_meminf(device, num_classes, target_train, target_test, shadow_train, shadow_test,
+                target_model, shadow_model,target_model_path,shadow_model_path,attack_path)
+    else:
+        File_Path_Csv = os.getcwd() + f"/result/Without_MIA/{algorithm}/{dataset_name}/{epsilon}//"
+        if not os.path.exists(File_Path_Csv):
+            os.makedirs(File_Path_Csv)
+        result_path = f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}.csv'
+        pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(result_path, index=False,
+                                                                                  header=False)
 
 if __name__=="__main__":
 

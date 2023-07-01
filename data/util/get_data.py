@@ -50,6 +50,7 @@ def get_data(name, augment=False, **kwargs):
                                     transform=transforms.Compose(
                                         [transforms.ToTensor(), normalize]
                                     ))
+        dataset=train_set+test_set
 
     elif name == "CIFAR-10-Transformers":
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -78,6 +79,7 @@ def get_data(name, augment=False, **kwargs):
                                     transform=transforms.Compose(
                                         train_transforms
                                     ))
+        dataset=train_set+test_set
 
     elif name == "CIFAR-100-Transformers":
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -106,6 +108,7 @@ def get_data(name, augment=False, **kwargs):
                                     transform=transforms.Compose(
                                         train_transforms
                                     ))
+        dataset=train_set+test_set
 
     elif name == "SVHN":
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -132,6 +135,7 @@ def get_data(name, augment=False, **kwargs):
                                     transform=transforms.Compose(
                                         [transforms.ToTensor(), normalize]
                                     ))
+        dataset=train_set+test_set
 
     elif name == "FMNIST":
         train_set = datasets.FashionMNIST(root='./data', train=True,
@@ -141,6 +145,7 @@ def get_data(name, augment=False, **kwargs):
         test_set = datasets.FashionMNIST(root='./data', train=False,
                                          transform=transforms.ToTensor(),
                                          download=True)
+        dataset=train_set+test_set
 
     elif name == "MNIST":
         train_set = datasets.MNIST(root='./data', train=True,
@@ -150,6 +155,7 @@ def get_data(name, augment=False, **kwargs):
         test_set = datasets.MNIST(root='./data', train=False,
                                   transform=transforms.ToTensor(),
                                   download=True)
+        dataset=train_set+test_set
 
     elif name == "EMNIST":
         train_set = datasets.EMNIST(root='./data', split='letters',train=True,
@@ -160,6 +166,7 @@ def get_data(name, augment=False, **kwargs):
                                   transform=transforms.ToTensor(),
                                   download=True)
 
+        dataset=train_set+test_set
 
 
     elif name == "cifar10_500K":
@@ -188,6 +195,7 @@ def get_data(name, augment=False, **kwargs):
                                           download=True,
                                           transform=transforms.Compose(train_transforms))
         test_set = None
+        dataset=train_set+test_set
 
     elif name == 'IMDB':
         MAX_WORDS = 20000
@@ -198,11 +206,12 @@ def get_data(name, augment=False, **kwargs):
 
         train_set = TensorDataset(torch.LongTensor(x_train), torch.LongTensor(y_train))
         test_set = TensorDataset(torch.LongTensor(x_test), torch.LongTensor(y_test))
+        dataset=train_set+test_set
 
     else:
         raise ValueError(f"unknown dataset {name}")
 
-    return train_set, test_set
+    return train_set, test_set,dataset
 
 class SemiSupervisedDataset(torch.utils.data.Dataset):
     def __init__(self,

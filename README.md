@@ -90,3 +90,13 @@ normalization step and of the DP-SGD algorithm.
 Specifically, we first compute the Rényi-DP budget for the normalization step, 
 and then compute the `noise_multiplier` of the DP-SGD algorithm so that the total
 privacy budget is used after a fixed number of epochs.
+
+## Member Inference Attacks
+In Member Inference Attacks setting, we do not support scattering networks.
+And for each dataset, we randomly split it into four subsets: the target training dataset, target testing dataset, shadow training dataset, and shadow testing dataset. 
+The ratio of the sample sizes in each subset is 2:1:2:1. 
+
+Our target model and training parameters are consistent with those described above.
+We can run MIA through adding the following to the above settings:
+```bash
+-- MIA=True

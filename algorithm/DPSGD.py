@@ -38,4 +38,4 @@ def DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon_budget, de
         iter += 1
 
     print("------finished ------")
-    return test_accuracy,iter,best_test_acc,best_iter
+    return test_accuracy,iter,best_test_acc,best_iter,model

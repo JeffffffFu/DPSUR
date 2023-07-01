@@ -19,66 +19,88 @@ from data.util.dividing_validation_data import dividing_validation_set, dividing
 import os
 
 
-def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,device):
+def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum, epsilon_budget,delta, C_t, sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device):
 
     orders = [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64))+ [128, 256, 512]
 
     test_dl = torch.utils.data.DataLoader(
         test_data, batch_size=batch_size, shuffle=False, pin_memory=True)
+    rdp_norm = 0.
 
-    if dataset_name != 'IMDB':
-
-        train_loader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
-
-
-        if use_scattering:
-            scattering, K, _ = get_scatter_transform(dataset_name)
-            scattering.to(device)
+    #if MIA==True, Do not using scatter
+    if MIA:
+        train_data=train_dataset
+        if dataset_name != 'IMDB':
+            optimizer = DPSGD_Optimizer(
+                l2_norm_clip=C_t,
+                noise_multiplier=sigma_t,
+                minibatch_size=batch_size,
+                microbatch_size=1,
+                params=model.parameters(),
+                lr=lr,
+                momentum=momentum
+            )
         else:
-            scattering = None
-            K = 3 if len(train_dataset.data.shape) == 4 else 1
-
-        rdp_norm=0.
-        if input_norm == "BN":
-            save_dir = f"bn_stats/{dataset_name}"
-            os.makedirs(save_dir, exist_ok=True)
-            bn_stats, rdp_norm = scatter_normalization(train_loader,
-                                                       scattering,
-                                                       K,
-                                                       device,
-                                                       len(train_dataset),
-                                                       len(train_dataset),
-                                                       noise_multiplier=bn_noise_multiplier,
-                                                       orders=orders,
-                                                       save_dir=save_dir)
-            model = CNNS[dataset_name](K, input_norm="BN", bn_stats=bn_stats, size=None)
-
-
-        else:
-            model = CNNS[dataset_name](K, input_norm=input_norm, num_groups=num_groups, size=None)
-
-        model.to(device)
-        train_data_scattered = get_scattered_dataset(train_loader, scattering, device, len(train_dataset))
-        test_dl = get_scattered_loader(test_dl, scattering, device)
-
-        optimizer = DPSGD_Optimizer(
-            l2_norm_clip=C_t,
-            noise_multiplier=sigma_t,
-            minibatch_size=batch_size,
-            microbatch_size=1,
-            params=model.parameters(),
-            lr=lr,
-            momentum=momentum
-        )
+            optimizer = DPAdam_Optimizer(
+                l2_norm_clip=C_t,
+                noise_multiplier=sigma_t,
+                minibatch_size=batch_size,
+                microbatch_size=1,
+                params=model.parameters(),
+                lr=lr)
     else:
-        optimizer = DPAdam_Optimizer(
-            l2_norm_clip=C_t,
-            noise_multiplier=sigma_t,
-            minibatch_size=batch_size,
-            microbatch_size=1,
-            params=model.parameters(),
-            lr=lr)
+        if dataset_name != 'IMDB':
+
+            train_loader = torch.utils.data.DataLoader(
+                train_dataset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+
+
+            if use_scattering:
+                scattering, K, _ = get_scatter_transform(dataset_name)
+                scattering.to(device)
+            else:
+                scattering = None
+                K = 3 if len(train_dataset.data.shape) == 4 else 1
+
+            if input_norm == "BN":
+                save_dir = f"bn_stats/{dataset_name}"
+                os.makedirs(save_dir, exist_ok=True)
+                bn_stats, rdp_norm = scatter_normalization(train_loader,
+                                                           scattering,
+                                                           K,
+                                                           device,
+                                                           len(train_dataset),
+                                                           len(train_dataset),
+                                                           noise_multiplier=bn_noise_multiplier,
+                                                           orders=orders,
+                                                           save_dir=save_dir)
+                model = CNNS[dataset_name](K, input_norm="BN", bn_stats=bn_stats, size=None)
+
+
+            else:
+                model = CNNS[dataset_name](K, input_norm=input_norm, num_groups=num_groups, size=None)
+
+            model.to(device)
+            train_data = get_scattered_dataset(train_loader, scattering, device, len(train_dataset))
+            test_dl = get_scattered_loader(test_dl, scattering, device)
+
+            optimizer = DPSGD_Optimizer(
+                l2_norm_clip=C_t,
+                noise_multiplier=sigma_t,
+                minibatch_size=batch_size,
+                microbatch_size=1,
+                params=model.parameters(),
+                lr=lr,
+                momentum=momentum
+            )
+        else:
+            optimizer = DPAdam_Optimizer(
+                l2_norm_clip=C_t,
+                noise_multiplier=sigma_t,
+                minibatch_size=batch_size,
+                microbatch_size=1,
+                params=model.parameters(),
+                lr=lr)
 
     minibatch_loader_for_train, microbatch_loader = get_data_loaders_possion(minibatch_size=batch_size, microbatch_size=1, iterations=1)
     minibatch_loader_for_valid, microbatch_loader = get_data_loaders_possion(minibatch_size=bs_valid, microbatch_size=1, iterations=1)
@@ -116,8 +138,8 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
                 rdp_valid = compute_rdp(bs_valid / len(train_dataset), sigma_v, t, orders)
                 epsilon, best_alpha = compute_eps(orders, rdp_train+rdp_valid, delta)
 
-            train_dl = minibatch_loader_for_train(train_data_scattered)
-            valid_dl = minibatch_loader_for_valid(train_data_scattered)
+            train_dl = minibatch_loader_for_train(train_data)
+            valid_dl = minibatch_loader_for_valid(train_data)
             for id, (data, target) in enumerate(train_dl):
                 optimizer.minibatch_size = len(data)
 
