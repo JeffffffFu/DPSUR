@@ -1,7 +1,7 @@
 # DPSUR
 
 
-*DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Updates and Release*</br>
+*DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release*</br>
 
 
 
