@@ -6,6 +6,7 @@ from datetime import time, datetime
 import pandas as pd
 import torch
 
+from algorithm.DPAGD import DPAGD
 from algorithm.DPSGD import DPSGD
 from algorithm.DPSGD_HF import DPSGD_HF
 from algorithm.DPSGD_TS import DPSGD_TS
@@ -22,7 +23,7 @@ from utils.dp_optimizer import  get_dp_optimizer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR'])
+    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR', 'DPAGD'])
     parser.add_argument('--dataset_name', type=str, default="MNIST",choices=['MNIST', 'FMNIST', 'CIFAR-10', 'IMDB'])
     parser.add_argument('--lr', type=float, default=0.5)
     parser.add_argument('--momentum', type=float, default=0.9)
@@ -99,6 +100,8 @@ def main():
 
         if algorithm=='DPSGD':
             test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm=='DPAGD':
+            test_acc,last_iter,best_acc,best_iter,trained_model=DPAGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,C_v,sigma_v,device)
         elif algorithm == 'DPSGD-TS':
             test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB

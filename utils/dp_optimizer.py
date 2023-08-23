@@ -41,6 +41,7 @@ def make_optimizer_class(cls):
                         accum_grad.add_(param.grad.data.mul(clip_coef))
             return total_norm
 
+
         def zero_accum_grad(self):
             for group in self.param_groups:
                 for accum_grad in group['accum_grads']:
@@ -61,6 +62,19 @@ def make_optimizer_class(cls):
                         param.grad.data.mul_(self.microbatch_size / self.minibatch_size)
 
             super(DPOptimizerClass, self).step(*args, **kwargs)
+
+
+        def step_dp_agd(self, *args, **kwargs):
+            for group in self.param_groups:
+                for param, accum_grad in zip(group['params'],
+                                             group['accum_grads']):
+                    if param.requires_grad:
+
+                        param.grad.data = accum_grad.clone()
+
+                        param.grad.data.add_(self.l2_norm_clip * self.noise_multiplier * torch.randn_like(param.grad.data))
+
+                        param.grad.data.mul_(self.microbatch_size / self.minibatch_size)
 
     return DPOptimizerClass
 
