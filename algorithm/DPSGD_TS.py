@@ -17,6 +17,9 @@ def DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon_budget,
     iter = 1
     epsilon = 0.
     best_test_acc=0.
+    epsilon_list=[]
+    test_loss_list=[]
+
     while epsilon < epsilon_budget:
 
         epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, iter, orders, delta) #comupte privacy cost
@@ -31,8 +34,10 @@ def DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon_budget,
             best_test_acc = test_accuracy
             best_iter = iter
 
+        epsilon_list.append(torch.tensor(epsilon))
+        test_loss_list.append(test_loss)
         print(f'iters:{iter},'f'epsilon:{epsilon:.4f} |'f' Test set: Average loss: {test_loss:.4f},'f' Accuracy:({test_accuracy:.2f}%)')
         iter += 1
 
     print("------finished ------")
-    return test_accuracy,iter,best_test_acc,best_iter,model
+    return test_accuracy,iter,best_test_acc,best_iter,model,[epsilon_list,test_loss_list]

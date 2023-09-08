@@ -46,7 +46,7 @@ def main():
 
     parser.add_argument('--MIA', type=bool, default=False)
 
-    parser.add_argument('--device', type=str, default='cuda',choices=['cpu', 'cuda'])
+    parser.add_argument('--device', type=str, default='cpu',choices=['cpu', 'cuda'])
 
 
     args = parser.parse_args()
@@ -99,16 +99,16 @@ def main():
         optimizer = get_dp_optimizer(dataset_name, lr, momentum, C_t, sigma_t, batch_size, model)
 
         if algorithm=='DPSGD':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm=='DPAGD':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPAGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,C_v,sigma_v,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPAGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,C_v,sigma_v,device)
         elif algorithm == 'DPSGD-TS':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
                      C_t, sigma_t, use_scattering, input_norm, bn_noise_multiplier, num_groups, device)
         elif algorithm == "DPSUR":
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
                    sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device)
 
         else:
@@ -137,6 +137,8 @@ def main():
         result_path = f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}.csv'
         pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(result_path, index=False,
                                                                                   header=False)
+        torch.save(iter_list, f"{File_Path_Csv}/iterList.pth")
+
 
 if __name__=="__main__":
 

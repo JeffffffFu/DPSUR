@@ -158,6 +158,7 @@ class MNIST_CNN_Tanh(nn.Module):
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
+        #return nn.functional.softmax(x)
         return x
 
 class CIFAR10_CNN_Relu(nn.Module):
