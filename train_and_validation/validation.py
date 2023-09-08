@@ -43,7 +43,7 @@ def validation_per_sample(model, test_loader,device,C):
                 if len(output.shape)==2:
                     output=torch.squeeze(output,0)
                 loss=F.cross_entropy(output, y, reduction='sum')
-                loss=min(loss,C)
+                loss=min(loss,C)   #逐样本loss裁剪
                 test_loss += loss
             num_examples += len(data)
     test_loss /= num_examples

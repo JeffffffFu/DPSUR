@@ -47,4 +47,6 @@ class RNN_Tanh(nn.Module):
         x = self.fc1(x)
         out = self.tanh(x)
         pred = self.fc2(out)
+       # return nn.functional.softmax(pred)
+
         return pred

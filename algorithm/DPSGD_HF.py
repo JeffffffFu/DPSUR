@@ -71,6 +71,9 @@ def DPSGD_HF(dataset_name,train_data, test_data, model, batch_size, lr, momentum
 
     iter = 1
     epsilon=0.
+    epsilon_list=[]
+    test_loss_list=[]
+
     while epsilon<epsilon_budget:
         if input_norm == "BN":
             rdp = compute_rdp(batch_size / len(train_data), sigma, iter, orders)
@@ -93,10 +96,11 @@ def DPSGD_HF(dataset_name,train_data, test_data, model, batch_size, lr, momentum
 
         print(f'iters:{iter},'f'epsilon:{epsilon:.4f} |'f' Test set: Average loss: {test_loss:.4f},'f' Accuracy:({test_accuracy:.2f}%)')
         iter+=1
-
+        epsilon_list.append(torch.tensor(epsilon))
+        test_loss_list.append(test_loss)
 
     print("------ finished ------")
-    return test_accuracy,iter,best_test_acc,best_iter,model
+    return test_accuracy,iter,best_test_acc,best_iter,model,[epsilon_list,test_loss_list]
 
 CNNS = {
     "CIFAR-10": CIFAR10_CNN_Tanh,
