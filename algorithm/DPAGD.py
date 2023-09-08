@@ -24,7 +24,7 @@ def DPAGD(train_data, test_data, model,optimizer, batch_size, epsilon_budget, de
     while epsilon < epsilon_budget:
 
         # epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, iter, orders, delta) #comupte privacy cost
-        RDP1 =  compute_rdp(batch_size / len(train_data), sigma, iter, orders)  #这个是train的RDP
+        RDP1 =  compute_rdp(batch_size / len(train_data), sigma, iter, orders)  #
 
 
         train_dl = minibatch_loader(train_data)  # possion sampling

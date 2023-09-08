@@ -23,7 +23,7 @@ def train_with_dp(model, train_loader, optimizer,device):
 
             if len(output.shape)==2:
                 output=torch.squeeze(output,0)
-            loss = F.cross_entropy(output, y_microbatch)
+            loss = F.cross_entropy(output, y_microbatch)  #改为负数似然损失函数了，后面记得要改回来
 
             loss.backward()
             optimizer.microbatch_step()
@@ -64,13 +64,13 @@ def train_with_dp_agd(model, train_loader, optimizer,C_t,sigma_t,C_v,sigma_v,dev
 
         optimizer.step_dp_agd()   #只是进行了梯度加噪，没有进行梯度下降
 
-        # 获取原参数和裁剪加噪后的梯度值
+        # 获取原参数和裁剪加噪平均后的梯度值
         model_parameters = model.parameters()
         gradients = [param.grad.clone() for param in model_parameters]
 
         model_parameters_dict = model.state_dict()
 
-        learning_rate = np.linspace(0, 5, 20 + 1)  # 学习率从0-2.0分成20份
+        learning_rate = np.linspace(0, 5, 5 + 1)  # 学习率从0-5.0分成5份
         min_index=0
         while min_index==0:
             loss = []
@@ -83,10 +83,10 @@ def train_with_dp_agd(model, train_loader, optimizer,C_t,sigma_t,C_v,sigma_v,dev
                         param -= lr * gradient
 
                 model.load_state_dict(model_parameters_dict)
-                test_loss = validation_per_sample(model, train_loader, device,C)
+                test_loss = validation_per_sample(model, train_loader, device,C_v)
                 loss.append(test_loss)
 
-            #找最小值
+            #找最小值jinx
             min_index=NoisyMax(loss,sigma_v,C_v,len(target))
 
 
