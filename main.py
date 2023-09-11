@@ -46,7 +46,7 @@ def main():
 
     parser.add_argument('--MIA', type=bool, default=False)
 
-    parser.add_argument('--device', type=str, default='cpu',choices=['cpu', 'cuda'])
+    parser.add_argument('--device', type=str, default='cuda',choices=['cpu', 'cuda'])
 
 
     args = parser.parse_args()

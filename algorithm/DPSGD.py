@@ -21,6 +21,7 @@ def DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon_budget, de
     epsilon_list=[]
     test_loss_list=[]
 
+
     while epsilon < epsilon_budget:
 
         epsilon, best_alpha = apply_dp_sgd_analysis(batch_size / len(train_data), sigma, iter, orders, delta) #comupte privacy cost
