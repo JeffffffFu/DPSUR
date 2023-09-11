@@ -39,6 +39,7 @@ def make_optimizer_class(cls):
                 for param, accum_grad in zip(group['params'], group['accum_grads']):
                     if param.requires_grad:
                         accum_grad.add_(param.grad.data.mul(clip_coef))
+
             return total_norm
 
         def zero_accum_grad(self):

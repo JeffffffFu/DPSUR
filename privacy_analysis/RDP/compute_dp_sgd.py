@@ -60,9 +60,9 @@ def RR_dp_privacy(p, steps, delta):
 
 
 if __name__=="__main__":
-    sigma=2.5
-    steps=800
-    q=1024/55000
+    sigma=0.5
+    steps=1
+    q=1.0
     orders = [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64))+ [128, 256, 512]
 
     eps, opt_order = apply_dp_sgd_analysis(q,sigma, steps, orders, 10 ** (-5))
