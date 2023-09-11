@@ -65,11 +65,13 @@
 
 
 #python main.py --algorithm DPSGD --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
-python main.py --algorithm DPSGD-HF --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
-python main.py --algorithm DPSGD-TS --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
-python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
-python main.py --algorithm DPAGD --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=3.0 --sigma_v=3.0  --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
+#python main.py --algorithm DPSGD-HF --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
+#python main.py --algorithm DPSGD-TS --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
+#python main.py --algorithm DPSUR --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=0.001 --sigma_v=0.8 --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
+#python main.py --algorithm DPAGD --dataset_name FMNIST  --sigma_t 2.15 --lr 4.0 --batch_size 2048 --C_v=3.0 --sigma_v=3.0  --bs_valid=256 --beta=-1 --input_norm=GroupNorm --num_groups=27 --use_scattering --eps=4.0
 
 
 
 #python main.py --algorithm DPSUR --dataset_name CIFAR-10 --sigma_t 5.67 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.1 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=4.0
+python main.py --algorithm DPSGD-TS --dataset_name CIFAR-10 --sigma_t 5.67 --lr 4.0 --batch_size 8192 --C_v=0.001 --sigma_v=1.1 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=4.0
+python main.py --algorithm DPAGD --dataset_name CIFAR-10 --sigma_t 5.67 --lr 4.0 --batch_size 8192 --C_v=3.0 --sigma_v=12.0 --bs_valid=256 --beta=-1 --input_norm=BN --bn_noise_multiplier=8 --use_scattering --eps=4.0

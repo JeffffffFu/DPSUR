@@ -73,7 +73,7 @@ def DPSGD_HF(dataset_name,train_data, test_data, model, batch_size, lr, momentum
     epsilon=0.
     epsilon_list=[]
     test_loss_list=[]
-
+    best_test_acc=0.
     while epsilon<epsilon_budget:
         if input_norm == "BN":
             rdp = compute_rdp(batch_size / len(train_data), sigma, iter, orders)
