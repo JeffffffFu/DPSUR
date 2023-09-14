@@ -42,6 +42,7 @@ def make_optimizer_class(cls):
 
             return total_norm
 
+
         def zero_accum_grad(self):
             for group in self.param_groups:
                 for accum_grad in group['accum_grads']:
@@ -63,6 +64,19 @@ def make_optimizer_class(cls):
 
             super(DPOptimizerClass, self).step(*args, **kwargs)
 
+
+        def step_dp_agd(self, *args, **kwargs):
+            for group in self.param_groups:
+                for param, accum_grad in zip(group['params'],
+                                             group['accum_grads']):
+                    if param.requires_grad:
+
+                        param.grad.data = accum_grad.clone()
+
+                        param.grad.data.add_(self.l2_norm_clip * self.noise_multiplier * torch.randn_like(param.grad.data))
+
+                        param.grad.data.mul_(self.microbatch_size / self.minibatch_size)
+
     return DPOptimizerClass
 
 DPAdam_Optimizer = make_optimizer_class(Adam)
@@ -70,9 +84,9 @@ DPAdagrad_Optimizer = make_optimizer_class(Adagrad)
 DPSGD_Optimizer = make_optimizer_class(SGD)
 DPRMSprop_Optimizer = make_optimizer_class(RMSprop)
 
-def get_dp_optimizer(dataset_name,lr,momentum,C_t,sigma,batch_size,model):
+def get_dp_optimizer(dataset_name,algortithm,lr,momentum,C_t,sigma,batch_size,model):
 
-    if dataset_name=='IMDB':
+    if dataset_name=='IMDB' and algortithm!='DPAGD':
         optimizer = DPAdam_Optimizer(
             l2_norm_clip=C_t,
             noise_multiplier=sigma,

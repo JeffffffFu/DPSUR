@@ -100,6 +100,7 @@ def text4():
     plt.show()
 
 
-if __name__=="__main__":
 
-    text4()
+
+if __name__ == '__main__':
+    test()

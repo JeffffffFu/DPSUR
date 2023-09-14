@@ -6,6 +6,7 @@ from datetime import time, datetime
 import pandas as pd
 import torch
 
+from algorithm.DPAGD import DPAGD
 from algorithm.DPSGD import DPSGD
 from algorithm.DPSGD_HF import DPSGD_HF
 from algorithm.DPSGD_TS import DPSGD_TS
@@ -22,7 +23,7 @@ from utils.dp_optimizer import  get_dp_optimizer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR'])
+    parser.add_argument('--algorithm', type=str, default="DPSGD",choices=['DPSGD', 'DPSGD-TS', 'DPSGD-HF', 'DPSUR', 'DPAGD'])
     parser.add_argument('--dataset_name', type=str, default="MNIST",choices=['MNIST', 'FMNIST', 'CIFAR-10', 'IMDB'])
     parser.add_argument('--lr', type=float, default=0.5)
     parser.add_argument('--momentum', type=float, default=0.9)
@@ -45,7 +46,7 @@ def main():
 
     parser.add_argument('--MIA', type=bool, default=False)
 
-    parser.add_argument('--device', type=str, default='cuda',choices=['cpu', 'cuda'])
+    parser.add_argument('--device', type=str, default='cpu',choices=['cpu', 'cuda'])
 
 
     args = parser.parse_args()
@@ -78,7 +79,7 @@ def main():
     if MIA:
         num_classes, target_train, target_test, shadow_train, shadow_test, target_model, shadow_model = prepare_MIA_dataset(
             dataset_name, algorithm,device)
-        optimizer = get_dp_optimizer(dataset_name, lr, momentum, C_t, sigma_t, batch_size, target_model)
+        optimizer = get_dp_optimizer(dataset_name, algorithm, lr, momentum, C_t, sigma_t, batch_size, target_model)
 
         if algorithm=='DPSGD':
             test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
@@ -95,17 +96,19 @@ def main():
 
         train_data, test_data,dataset = get_data(dataset_name, augment=False)
         model=get_model(algorithm,dataset_name,device)
-        optimizer = get_dp_optimizer(dataset_name, lr, momentum, C_t, sigma_t, batch_size, model)
+        optimizer = get_dp_optimizer(dataset_name, algorithm,lr, momentum, C_t, sigma_t, batch_size, model)
 
         if algorithm=='DPSGD':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+        elif algorithm=='DPAGD':
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPAGD(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,C_v,sigma_v,device)
         elif algorithm == 'DPSGD-TS':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD_TS(train_data, test_data, model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm == 'DPSGD-HF' and dataset_name !='IMDB':  #Not support IMDB
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD_HF(dataset_name, train_data, test_data, model, batch_size, lr, momentum, epsilon, delta,
                      C_t, sigma_t, use_scattering, input_norm, bn_noise_multiplier, num_groups, device)
         elif algorithm == "DPSUR":
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSUR(dataset_name,train_data, test_data, model, batch_size, lr, momentum, epsilon,delta, C_t,
                    sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device)
 
         else:
@@ -134,6 +137,8 @@ def main():
         result_path = f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}.csv'
         pd.DataFrame([best_acc, int(best_iter), test_acc, int(last_iter)]).to_csv(result_path, index=False,
                                                                                   header=False)
+        torch.save(iter_list, f"{File_Path_Csv}/iterList.pth")
+
 
 if __name__=="__main__":
 

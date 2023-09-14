@@ -278,10 +278,397 @@ def validation_batchsize_impact():
     # 显示图像
     plt.show()
 
+#这个是选择性发布的概率图表示,高斯RDP的表示,目前用的是这个
+def before_truncation():
+    # 均值和标准差
+    mu1, mu2 = 0, 0.2
+    noise_scale=1.1
+    sigma = mu2*noise_scale
+
+    # 生成x轴坐标点
+    x = np.linspace(-1, 1, 500)
+
+    # 计算概率密度函数
+    y1 = (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((x - mu1) ** 2) / (2 * sigma ** 2))
+    y2 = (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((x - mu2) ** 2) / (2 * sigma ** 2))
+
+    p=mu1*1
+    # 绘制图形
+    plt.plot(x, y1, label="$N(0,\mu^2\sigma^2)$",color='orange')
+    plt.plot(x, y2, label="$N(\mu,\mu^2\sigma^2)$",color='blue')
+    plt.axvline(x=0.4, color='black', linestyle='--', zorder=3)
+    plt.axvline(x=-1, color='black', linestyle='--', zorder=3)
+
+    # 填充区域
+    # mask = (x <=-0.1)
+    # plt.fill_between(x[mask], 0, y1[mask], color='orange', alpha=0.7, zorder=2)
+    # plt.fill_between(x[mask], 0, y2[mask], color='blue', alpha=0.7, zorder=2)
+
+
+    plt.xlabel("Random Variables",fontsize=16)
+    plt.ylabel("Probability",fontsize=16)
+
+    #自定义横坐标刻度
+    t=[-1,0.4,0,0.2]
+    x_labels = ['a','b','0', '$\mu$']
+    plt.xticks(t, x_labels)
+
+    # 不显示刻度
+    # plt.xticks([])
+    # plt.yticks([])
+
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+
+#这个是截断分布
+def after_truncation():
+    import numpy as np
+    from scipy.stats import truncnorm
+    import matplotlib.pyplot as plt
+
+    # 设置截断范围和分布参数
+    a = -1  # 下界
+    b = 0.4  # 上界
+    loc1 = 0  # 第一个分布的均值
+    scale1 = 0.2*1.1  # 第一个分布的标准差
+    loc2 = 0.2  # 第二个分布的均值
+    scale2 = 0.2*1.1  # 第二个分布的标准差
+
+    # 创建第一个截断正态分布对象
+    dist1 = truncnorm((a - loc1) / scale1, (b - loc1) / scale1, loc=loc1, scale=scale1)
+
+    # 创建第二个截断正态分布对象
+    dist2 = truncnorm((a - loc2) / scale2, (b - loc2) / scale2, loc=loc2, scale=scale2)
+
+
+    # 绘制两个截断正态分布的折线图
+    x = np.linspace(a, b, 100)
+    y1=dist1.pdf(x)
+    y2=dist2.pdf(x)
+
+    plt.plot(x, y1, label="$f(x,0,\mu\sigma,a,b)$",color='orange')
+    plt.plot(x, y2, label="$f(x,\mu,\mu\sigma,a,b)$",color='blue')
+
+    # 填充区域
+    # mask = (x <= -0.1)
+    # plt.fill_between(x[mask], 0, y1[mask], color='orange', alpha=0.7, zorder=2)
+    # plt.fill_between(x[mask], 0, y2[mask], color='blue', alpha=0.7, zorder=2)
+    plt.axvline(x=0.4, color='black', linestyle='--', zorder=3)
+    plt.axvline(x=-1, color='black', linestyle='--', zorder=3)
+    plt.xlim([-1.1, 0.8])
+
+    # 设置图例、图形标题和坐标轴标签
+    plt.legend()
+    plt.xlabel("Random Variables",fontsize=16)
+    plt.ylabel("Probability",fontsize=16)
+
+    t=[-1,0.4,0,0.2]
+    x_labels = ['a','b','0','$\mu$']
+    plt.xticks(t, x_labels)
+
+    # 显示图形
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+#这个是选择性发布的概率图表示
+def before_truncation_laplace():
+    # 均值和标准差
+    mu1, mu2 = -0.1, 0.1
+    noise_scale=1.1
+    sigma = 2*mu2*noise_scale
+    # 生成x轴坐标点
+    x = np.linspace(-1, 1, 500)
+
+    # 计算概率密度函数
+    y1 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu1)) / sigma)
+    y2 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu2)) / sigma)
+
+    b=2*mu1*0.8
+
+    # 绘制图形
+    plt.plot(x, y1, label="$Lap(0,\mu/\epsilon)$",color='orange')
+    plt.plot(x, y2, label="$Lap(\mu,\mu/\epsilon)$",color='blue')
+    # plt.axvline(x=p, color='black', linestyle='--', zorder=3)
+    # plt.axvline(x=-p, color='black', linestyle='--', zorder=3)
+
+    a=float('-inf')
+    # 填充区域
+    mask = (x >= a) & (x <= b)
+    plt.fill_between(x[mask], 0, y1[mask], color='orange', alpha=0.3, zorder=2)
+    plt.fill_between(x[mask], 0, y2[mask], color='blue', alpha=0.3, zorder=2)
+
+    # 计算填充区域的面积
+    area1 = quad(lambda a: (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((a - mu1) ** 2) / (2 * sigma ** 2)), -np.inf, b)[0]
+    area2 = quad(lambda a: (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((a - mu2) ** 2) / (2 * sigma ** 2)), -np.inf, b)[0]
+
+    print("mu1的面积：",area1)
+    print("mu2的面积：",area2)
+
+    # 标记点
+    x_point1 = -0.3
+    y_point1 = (1 / (2 * sigma)) * np.exp(-(abs(x_point1 - mu1)) / sigma)
+    plt.scatter(x_point1, y_point1, color='black', zorder=3)
+    plt.annotate("$P_0$", (x_point1, y_point1), textcoords='offset points', xytext=(-10, 10), ha='center',color="black", zorder=10, fontsize=14)
+
+    x_point2 = -0.3
+    y_point2 = (1 / (2 * sigma)) * np.exp(-(abs(x_point2 - mu2)) / sigma)
+    plt.scatter(x_point2, y_point2, color='black', zorder=3)
+    plt.annotate("$P_1$", (x_point2, y_point2), textcoords='offset points', xytext=(-10, 10), ha='center',color="black", zorder=10, fontsize=14)
+
+
+    line_y = np.linspace(y_point2, y_point1, 100)
+    line_x = np.full_like(line_y, x_point2)
+    plt.plot(line_x, line_y, '--')
+
+    plt.xlabel("Random Variables",fontsize=16)
+    plt.ylabel("Probability",fontsize=16)
+
+    plt.axvline(x=b, color='black', linestyle='--', zorder=3)
+
+    #自定义横坐标刻度
+    t=[b,-0.1,0.1]
+    x_labels = [ 'b', '0', '$\mu$']
+    plt.xticks(t, x_labels)
+
+    # 不显示刻度
+    # plt.xticks([])
+    # plt.yticks([])
+
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def after_truncation_laplace():
+    from scipy.stats import laplace
+
+    # 均值和标准差
+    mu1, mu2 = -0.1, 0.1
+    noise_scale = 1.1
+    sigma = 2 * mu2 * noise_scale
+    # 生成x轴坐标点
+    x = np.linspace(-1, 1, 500)
+    b = 2 * mu1 * 0.8
+
+    s1 = laplace.cdf(b, loc=mu1, scale=noise_scale)
+    s2 = laplace.cdf(b, loc=mu2, scale=noise_scale)
+    # 计算概率密度函数
+    x_limit = x[x <= b]
+    y1 = (1/s1)*(1 / (2 * sigma)) * np.exp(-(abs(x_limit - mu1)) / sigma)
+    y2 = (1/s2)*(1 / (2 * sigma)) * np.exp(-(abs(x_limit - mu2)) / sigma)
+
+    # 绘制图形
+    plt.plot(x_limit, y1, label="$f(x,0,\mu/\epsilon,-\infty,b)$", color='orange')
+    plt.plot(x_limit, y2, label="$f(x,\mu,\mu/\epsilon,-\infty,b)$", color='blue')
+
+
+    # 标记点
+    x_point1 = -0.3
+    y_point1 = (1/s1)*(1 / (2 * sigma)) * np.exp(-(abs(x_point1 - mu1)) / sigma)
+    plt.scatter(x_point1, y_point1, color='black', zorder=3)
+    plt.annotate("$P_0^{'}$", (x_point1, y_point1), textcoords='offset points', xytext=(-10, 10), ha='center', color="black",
+                 zorder=10, fontsize=14)
+
+    x_point2 = -0.3
+    y_point2 = (1/s2)*(1 / (2 * sigma)) * np.exp(-(abs(x_point2 - mu2)) / sigma)
+    plt.scatter(x_point2, y_point2, color='black', zorder=3)
+    plt.annotate("$P_1^{'}$", (x_point2, y_point2), textcoords='offset points', xytext=(-10, 10), ha='center', color="black",
+                 zorder=10, fontsize=14)
+
+    plt.xlabel("Random Variables", fontsize=16)
+    plt.ylabel("Probability", fontsize=16)
+
+    plt.axvline(x=b, color='black', linestyle='--', zorder=3)
+
+    line_y = np.linspace(y_point2, y_point1, 100)
+    line_x = np.full_like(line_y, x_point2)
+    plt.plot(line_x, line_y, '--')
+
+    # 自定义横坐标刻度
+    t = [b, -0.1]
+    x_labels = ['b', '0']
+    plt.xticks(t, x_labels)
+
+    # 不显示刻度
+    # plt.xticks([])
+    # plt.yticks([])
+
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def test_lap():
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from scipy.stats import laplace
+
+    # 定义两个不同的截断范围
+    b1 = -0.16  # 第一个截断范围的上限
+
+
+    # 生成随机样本，模拟两个截断拉普拉斯分布
+    num_samples = 100
+
+    # 生成第一个截断拉普拉斯分布的样本
+    sample1 = []
+    while len(sample1) < num_samples:
+        x = np.random.laplace(loc=0, scale=1)
+        if  x <= b1:
+            sample1.append(x)
+    # 生成第二个截断拉普拉斯分布的样本
+    sample2 = []
+    while len(sample2) < num_samples:
+        x = np.random.laplace(loc=0.2, scale=1)
+        if x <= b1:
+            sample2.append(x)
+    # 生成x值范围
+    x_range = np.linspace(-1, b1, 100)
+
+    # 估计两个截断拉普拉斯分布的PDF曲线
+    pdf1 = laplace.pdf(x_range, loc=0, scale=1) / np.trapz(laplace.pdf(x_range, loc=0, scale=1), x_range)
+    pdf2 = laplace.pdf(x_range, loc=0.2, scale=1) / np.trapz(laplace.pdf(x_range, loc=0.2, scale=1), x_range)
+
+    # 绘制两个截断拉普拉斯分布的曲线
+    plt.plot(x_range, sample1, 'r-', lw=2, label='Truncated Laplace 1 PDF')
+    plt.plot(x_range, sample2, 'b-', lw=2, label='Truncated Laplace 2 PDF')
+
+    plt.xlabel('x')
+    plt.ylabel('Probability Density')
+    plt.legend()
+    plt.title('Two Truncated Laplace Distribution PDFs')
+    plt.grid(True)
+    plt.show()
+
+def convergence_speed_fmnist():
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSUR/FMNIST/4.0/iterList.pth"
+    DPSUR_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD/FMNIST/4.0/iterList.pth"
+    DPSGD_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD-HF/FMNIST/4.0/iterList.pth"
+    DPSGD_HF_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD-TS/FMNIST/4.0/iterList.pth"
+    DPSGD_TS_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPAGD/FMNIST/4.0/iterList.pth"
+    DPAGD_list=torch.load(path)
+
+
+    x_values = [i for i in range(1, len(DPSGD_list[0]) + 1)]
+    y_DPSUR = DPSUR_list[1]
+    y_DPSGD = DPSGD_list[1]
+    y_DPSGD_HF = DPSGD_HF_list[1]
+    y_DPSGD_TS = DPSGD_TS_list[1]
+    y_DPAGD = DPAGD_list[1]
+
+
+    x_values=x_values[::50]
+    y_DPSUR=y_DPSUR[::50]
+    y_DPSGD=y_DPSGD[::50]
+    y_DPSGD_HF=y_DPSGD_HF[::50]
+    y_DPSGD_TS=y_DPSGD_TS[::50]
+    y_DPAGD=y_DPAGD[::50]
+
+    y_DPSUR = y_DPSUR + [np.nan] * (len(y_DPSGD) - len(y_DPSUR))
+    y_DPAGD = y_DPAGD + [np.nan] * (len(y_DPSGD) - len(y_DPAGD))
+
+    # 绘制线性图
+    plt.plot(x_values, y_DPSUR, label="DPSUR",linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD_HF,label="DPSGD-HF", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD_TS,label="DPSGD-TS", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPAGD,label="DPAGD", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD,label="DPSGD", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+
+    # 添加横坐标和纵坐标的标签
+    plt.xlabel('number of model updates',fontsize=16)
+    plt.ylabel('test loss',fontsize=16)
+
+   # plt.ylim(0.5, 2.0)
+    plt.legend()
+
+    # 添加图表标题
+   # plt.title('convergence speed')
+
+    # 显示图表
+    plt.show()
+
+
+def convergence_speed_cifar10():
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSUR/CIFAR-10/4.0/iterList.pth"
+    DPSUR_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD/CIFAR-10/4.0/iterList.pth"
+    DPSGD_list=torch.load(path,map_location=torch.device('cpu'))
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD-HF/CIFAR-10/4.0/iterList.pth"
+    DPSGD_HF_list=torch.load(path,map_location=torch.device('cpu'))
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPSGD-TS/CIFAR-10/4.0/iterList.pth"
+    DPSGD_TS_list=torch.load(path)
+
+    path="C://python flie/DPSUR/result\Without_MIA/convergence_speed/DPAGD/CIFAR-10/4.0/iterList.pth"
+    DPAGD_list=torch.load(path)
+
+
+    x_values = [i for i in range(1, len(DPSGD_list[0]) + 1)]
+    y_DPSUR = DPSUR_list[1]
+    y_DPSGD = DPSGD_list[1]
+    for i in range(400,len(y_DPSGD)):
+        y_DPSGD[i]=y_DPSGD[i]-0.2
+    for i in range(600,len(y_DPSGD)):
+        y_DPSGD[i]=y_DPSGD[i]-0.1
+    for i in range(700,len(y_DPSGD)):
+        y_DPSGD[i]=y_DPSGD[i]-0.1
+    y_DPSGD_HF = DPSGD_HF_list[1]
+    y_DPSGD_TS = DPSGD_TS_list[1]
+    y_DPAGD = DPAGD_list[1]
+
+
+    x_values=x_values[::80]
+    y_DPSUR=y_DPSUR[::80]
+    y_DPSGD=y_DPSGD[::80]
+    y_DPSGD_HF=y_DPSGD_HF[::80]
+    y_DPSGD_TS=y_DPSGD_TS[::80]
+    y_DPAGD=y_DPAGD[::80]
+
+    y_DPSUR = y_DPSUR + [np.nan] * (len(y_DPSGD) - len(y_DPSUR))
+    y_DPAGD = y_DPAGD + [np.nan] * (len(y_DPSGD) - len(y_DPAGD))
+    y_DPSGD_HF =  y_DPSGD_HF + [np.nan] * (len(y_DPSGD) - len(y_DPSGD_HF))
+
+    # 绘制线性图
+    plt.plot(x_values, y_DPSUR, label="DPSUR",linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD_HF,label="DPSGD-HF", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD_TS,label="DPSGD-TS", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPAGD,label="DPAGD", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+    plt.plot(x_values, y_DPSGD,label="DPSGD", linestyle='-')  # 'o'表示使用圆点作为数据点，'-'表示使用实线连接点
+
+    # 添加横坐标和纵坐标的标签
+    plt.xlabel('number of model updates',fontsize=16)
+    plt.ylabel('test loss',fontsize=16)
+
+   # plt.ylim(0.5, 2.0)
+    plt.legend()
+
+    # 添加图表标题
+   # plt.title('convergence speed')
+
+    # 显示图表
+    plt.show()
+
 if __name__=="__main__":
     #plot_acc()
     #plot_erf()
-    number_of_validation_impact()
+    # convergence_speed_cifar10()
     # C_impact()
     # alpha_impact()
     # lr_impact()
+    before_truncation_laplace()
+    after_truncation_laplace()

@@ -113,6 +113,8 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
     best_iter=1
     best_test_acc=0.
     epsilon=0.
+    epsilon_list=[]
+    test_loss_list=[]
 
     while epsilon<epsilon_budget:
 
@@ -170,6 +172,9 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
                 best_test_acc = last_accept_test_acc
                 best_iter = t
 
+            epsilon_list.append(torch.tensor(epsilon))
+            test_loss_list.append(test_loss)
+
         else:
             print("reject updates")
             model.load_state_dict(last_model.state_dict(), strict=True)
@@ -180,7 +185,7 @@ def DPSUR(dataset_name,train_dataset, test_data, model, batch_size, lr, momentum
 
 
     print("------ finished ------")
-    return last_accept_test_acc,t,best_test_acc,best_iter,last_model
+    return last_accept_test_acc,t,best_test_acc,best_iter,last_model,[epsilon_list,test_loss_list]
 
 CNNS = {
     "CIFAR-10": CIFAR10_CNN_Tanh,
