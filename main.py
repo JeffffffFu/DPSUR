@@ -82,11 +82,11 @@ def main():
         optimizer = get_dp_optimizer(dataset_name, algorithm, lr, momentum, C_t, sigma_t, batch_size, target_model)
 
         if algorithm=='DPSGD':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm == 'DPSGD-TS':
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSGD_TS(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSGD_TS(target_train, target_test, target_model,optimizer, batch_size, epsilon, delta,sigma_t,device)
         elif algorithm == "DPSUR":
-            test_acc,last_iter,best_acc,best_iter,trained_model=DPSUR(dataset_name,target_train, target_test, target_model, batch_size, lr, momentum, epsilon,delta, C_t,
+            test_acc,last_iter,best_acc,best_iter,trained_model,iter_list=DPSUR(dataset_name,target_train, target_test, target_model, batch_size, lr, momentum, epsilon,delta, C_t,
                    sigma_t,use_scattering,input_norm,bn_noise_multiplier,num_groups,bs_valid,C_v,beta,sigma_v,MIA,device)
 
         else:
@@ -128,7 +128,7 @@ def main():
         shadow_model_path=f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_shadow_model.pth'
         attack_path=f'{File_Path_Csv}/{str(sigma_t)}_{str(lr)}_{str(batch_size)}_{str(sigma_v)}_{str(bs_valid)}_attack.pth'
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> membership inference >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        meminf_res_train3, meminf_res_test3, meminf_res_train0, meminf_res_test0 = test_meminf(device, num_classes, target_train, target_test, shadow_train, shadow_test,
+        meminf_res_train0, meminf_res_test0,meminf_res_train3, meminf_res_test3, meminf_res_train2,meminf_res_test2 = test_meminf(device, num_classes, target_train, target_test, shadow_train, shadow_test,
                 target_model, shadow_model,target_model_path,shadow_model_path,attack_path)
     else:
         File_Path_Csv = os.getcwd() + f"/result/Without_MIA/{algorithm}/{dataset_name}/{epsilon}//"

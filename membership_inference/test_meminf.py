@@ -28,6 +28,15 @@ def test_meminf(device, num_classes, target_train, target_test, shadow_train, sh
         target_train, target_test, shadow_train, shadow_test, batch_size)
     # attack_trainloader, attack_testloader = get_attack_dataset_without_shadow(target_train, target_test, batch_size)
 
+    # --------------------------------------- Model 0 -- BlackBox  Shadow ---------------------------------------
+    # choosing attack model
+    attack_model0 = ShadowAttackModel(num_classes)  # Model 0 BlackBox Shadow
+
+    print("====================== BlackBox Shadow result: ======================")
+    meminf_res_train0, meminf_res_test0 = attack_mode0(target_model_path, shadow_model_path, attack_path, device,
+                                                       attack_trainloader, attack_testloader, target_model,
+                                                       shadow_model, attack_model0, 1, num_classes)
+
     # --------------------------------------- Model 3 -- WhiteBox Shadow ---------------------------------------
     # for white box
     gradient_size = get_gradient_size(target_model)
@@ -36,30 +45,45 @@ def test_meminf(device, num_classes, target_train, target_test, shadow_train, sh
     # choosing attack model
     attack_model3 = WhiteBoxAttackModel(num_classes, total)  # Model 2 and 3 whitebox
 
-    print("=========================== attack_mode3_result: ===========================")
+    print("=========================== WhiteBox Shadow result: ===========================")
     meminf_res_train3, meminf_res_test3 = attack_mode3(target_model_path, shadow_model_path, attack_path, device,
                                                        attack_trainloader, attack_testloader, target_model,
                                                        shadow_model, attack_model3, 1, num_classes)
 
-    # --------------------------------------- Model 0 -- BlackBox  Shadow ---------------------------------------
-    # choosing attack model
-    attack_model0 = ShadowAttackModel(num_classes)  # Model 0 BlackBox Shadow
 
-    print("====================== attack_mode0_result: ======================")
-    meminf_res_train0, meminf_res_test0 = attack_mode0(target_model_path, shadow_model_path, attack_path, device,
+    # ************************************** Model 2 -- WhiteBox Partial **************************************
+    # buliding attack dataset------- for both mode2
+    attack_trainloader, attack_testloader = get_attack_dataset_without_shadow(target_train, target_test, batch_size)
+
+    # for white box
+    gradient_size = get_gradient_size(target_model)
+    total = gradient_size[0][0] // 2 * gradient_size[0][1] // 2
+
+    # choosing attack model
+    attack_model2 = WhiteBoxAttackModel(num_classes, total)  # Model 2 and 3 whitebox
+
+    print("=========================== WhiteBox Partial result: ===========================")
+    meminf_res_train2, meminf_res_test2 = attack_mode2(target_model_path, attack_path, device,
                                                        attack_trainloader, attack_testloader, target_model,
-                                                       shadow_model, attack_model0, 1, num_classes)
+                                                       attack_model2, 1, num_classes)
+
 
     #F1 Auc Acc
-    print("White-Box/Shadow membership inference result: ========")
-    print(" ***[F1, AUC, Acc]***")
-    print("train: ", meminf_res_train3)
-    print("test: ", meminf_res_test3)
 
     print( "Black-Box/Shadow membership inference result: ========")
     print(" ***[F1, AUC, Acc]***")
     print("train: ", meminf_res_train0)
     print("test: ", meminf_res_test0)
 
-    return meminf_res_train3, meminf_res_test3, meminf_res_train0, meminf_res_test0
+    print("White-Box/Shadow membership inference result: ========")
+    print(" ***[F1, AUC, Acc]***")
+    print("train: ", meminf_res_train3)
+    print("test: ", meminf_res_test3)
+
+    print("White-Box/Partial membership inference result: ========")
+    print(" ***[F1, AUC, Acc]***")
+    print("train: ", meminf_res_train2)
+    print("test: ", meminf_res_test2)
+
+    return meminf_res_train0, meminf_res_test0,meminf_res_train3, meminf_res_test3, meminf_res_train2,meminf_res_test2
     # WhiteBox Shadow, 	BlackBox Shadow

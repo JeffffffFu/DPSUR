@@ -38,11 +38,11 @@ class shadow():
     # Training
     def train(self):
         self.model.train()
-        
+
         train_loss = 0
         correct = 0
         total = 0
-        
+
         for batch_idx, (inputs, targets) in enumerate(self.trainloader):
 
             inputs, targets = inputs.to(self.device), targets.to(self.device)
@@ -58,7 +58,7 @@ class shadow():
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-                
+
         self.scheduler.step()
 
         print( 'Train Acc: %.3f%% (%d/%d) | Loss: %.3f' % (100.*correct/total, correct, total, 1.*train_loss/batch_idx))
@@ -131,7 +131,7 @@ class distillation_training():
             outputs = self.model(inputs)
             teacher_output = self.teacher(inputs)
             teacher_output = teacher_output.detach()
-    
+
             loss = self.distillation_loss(outputs, targets, teacher_output, T=self.T, alpha=self.alpha)
             loss.backward()
             self.optimizer.step()
@@ -168,7 +168,7 @@ class distillation_training():
         return 1.*correct/total
 
 class attack_for_blackbox():
-    def __init__(self, SHADOW_PATH, TARGET_PATH, ATTACK_SETS, attack_train_loader, attack_test_loader, 
+    def __init__(self, SHADOW_PATH, TARGET_PATH, ATTACK_SETS, attack_train_loader, attack_test_loader,
                     target_model, shadow_model, attack_model, device):
         self.device = device
 
@@ -199,13 +199,13 @@ class attack_for_blackbox():
 
     def _get_data(self, model, inputs, targets):
         result = model(inputs)
-        
+
         output, _ = torch.sort(result, descending=True)
         # results = F.softmax(results[:,:5], dim=1)
         _, predicts = result.max(1)
 
         prediction = predicts.eq(targets).float()
-        
+
         # prediction = []
         # for predict in predicts:
         #     prediction.append([1,] if predict else [0,])
@@ -223,7 +223,7 @@ class attack_for_blackbox():
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
                 output, prediction = self._get_data(self.shadow_model, inputs, targets)
                 # output = output.cpu().detach().numpy()
-            
+
                 pickle.dump((output, prediction, members), f)
 
         print("Finished Saving Train Dataset")
@@ -233,7 +233,7 @@ class attack_for_blackbox():
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
                 output, prediction = self._get_data(self.target_model, inputs, targets)
                 # output = output.cpu().detach().numpy()
-            
+
                 pickle.dump((output, prediction, members), f)
 
         print("Finished Saving Test Dataset")
@@ -267,7 +267,7 @@ class attack_for_blackbox():
                     # # print("--------output--------: ",output.shape)
                     # # print("--------prediction--------: ",prediction.shape,prediction[0])
                     # # *******************************************************************
-                    
+
                     output, prediction, members = output.to(self.device), prediction.to(self.device), members.to(self.device)
                     results = self.attack_model(output, prediction)
                     results = F.softmax(results, dim=1)
@@ -304,7 +304,7 @@ class attack_for_blackbox():
 
             with open(result_path, "wb") as f:
                 pickle.dump((final_train_gndtrth, final_train_predict, final_train_probabe), f)
-            
+
             print("Saved Attack Train Ground Truth and Predict Sets")
             print("Train F1: %f\nAUC: %f" % (train_f1_score, train_roc_auc_score))
 
@@ -394,7 +394,7 @@ class attack_for_blackbox():
         torch.save(self.attack_model.state_dict(), path)
 
 class attack_for_whitebox():
-    def __init__(self, TARGET_PATH, SHADOW_PATH, ATTACK_SETS, attack_train_loader, attack_test_loader, 
+    def __init__(self, TARGET_PATH, SHADOW_PATH, ATTACK_SETS, attack_train_loader, attack_test_loader,
                     target_model, shadow_model, attack_model, device, class_num):
         self.device = device
         self.class_num = class_num
@@ -407,9 +407,9 @@ class attack_for_whitebox():
         self.target_model = target_model.to(self.device)
         # a=torch.load(self.TARGET_PATH)
         # self.target_model.load_state_dict(a['model'])
-        
+
         # self.target_model.load_state_dict(torch.load('./data/results/trained_model/target_stl10_preactresnet18.pth'))
-        
+
 
         self.target_model.load_state_dict(torch.load(self.TARGET_PATH))
         self.target_model.eval()
@@ -435,7 +435,7 @@ class attack_for_whitebox():
 
         self.attack_train_data = None
         self.attack_test_data = None
-        
+
 
     def _get_data(self, model, inputs, targets):
         results = model(inputs)
@@ -443,7 +443,7 @@ class attack_for_whitebox():
         losses = self.target_criterion(results, targets)
 
         gradients = []
-        
+
         for loss in losses:
             loss.backward(retain_graph=True)
 
@@ -477,7 +477,7 @@ class attack_for_whitebox():
                 output, loss, gradient, label = self._get_data(self.shadow_model, inputs, targets)
 
                 # print("prepare_dataset, 1")
-        
+
                 pickle.dump((output, loss, gradient, label, members), f)
 
         print("prepare_dataset, 1")
@@ -488,14 +488,14 @@ class attack_for_whitebox():
             for inputs, targets, members in self.attack_test_loader:
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
                 output, loss, gradient, label = self._get_data(self.target_model, inputs, targets)
-            
+
                 pickle.dump((output, loss, gradient, label, members), f)
 
             # pickle.dump((output, loss, gradient, label, members), open(self.ATTACK_PATH + "test.p", "wb"))
 
         print("Finished Saving Test Dataset")
 
-    
+
     def train(self, epoch, result_path):
         self.attack_model.train()
         batch_idx = 1
@@ -518,7 +518,7 @@ class attack_for_whitebox():
                     results = self.attack_model(output, loss, gradient, label)
                     # results = F.softmax(results, dim=1)
                     losses = self.attack_criterion(results, members)
-                    
+
                     losses.backward()
                     self.optimizer.step()
 
@@ -534,7 +534,7 @@ class attack_for_whitebox():
 
                     batch_idx += 1
                 except EOFError:
-                    break	
+                    break
 
         if epoch:
             final_train_gndtrth = torch.cat(final_train_gndtrth, dim=0).cpu().detach().numpy()
@@ -549,7 +549,7 @@ class attack_for_whitebox():
 
             with open(result_path, "wb") as f:
                 pickle.dump((final_train_gndtrth, final_train_predict, final_train_probabe), f)
-            
+
             print("Saved Attack Train Ground Truth and Predict Sets")
             print("Train F1: %f\nAUC: %f" % (train_f1_score, train_roc_auc_score))
 
@@ -671,7 +671,7 @@ def train_shadow_distillation(MODEL_PATH, DL_PATH, device, target_model, student
 
         print('The overfitting rate is %s' % overfitting)
 
-        
+
     result_path = DL_PATH + "_shadow.pth"
 
     distillation.saveModel(result_path)
@@ -680,12 +680,20 @@ def train_shadow_distillation(MODEL_PATH, DL_PATH, device, target_model, student
 
     return acc_distillation_train, acc_distillation_test, overfitting
 
+
 def get_attack_dataset_without_shadow(train_set, test_set, batch_size):
-    mem_length = len(train_set)//3
-    nonmem_length = len(test_set)//3
-    mem_train, mem_test, _ = torch.utils.data.random_split(train_set, [mem_length, mem_length, len(train_set)-(mem_length*2)])
-    nonmem_train, nonmem_test, _ = torch.utils.data.random_split(test_set, [nonmem_length, nonmem_length, len(test_set)-(nonmem_length*2)])
-    mem_train, mem_test, nonmem_train, nonmem_test = list(mem_train), list(mem_test), list(nonmem_train), list(nonmem_test)
+    mem_length = len(train_set) // 6
+    # mem_length = len(train_set)//3
+    nonmem_length = len(test_set) // 6
+    # nonmem_length = len(test_set)//3
+    mem_train, mem_test, _ = torch.utils.data.random_split(train_set, [mem_length, mem_length * 1,
+                                                                       len(train_set) - (mem_length * 2)])
+    # mem_train, mem_test, _ = torch.utils.data.random_split(train_set, [mem_length, mem_length, len(train_set)-(mem_length*2)])
+    nonmem_train, nonmem_test, _ = torch.utils.data.random_split(test_set, [nonmem_length * 1, nonmem_length * 2,
+                                                                            len(test_set) - (nonmem_length * 3)])
+    # nonmem_train, nonmem_test, _ = torch.utils.data.random_split(test_set, [nonmem_length, nonmem_length, len(test_set)-(nonmem_length*2)])
+    mem_train, mem_test, nonmem_train, nonmem_test = list(mem_train), list(mem_test), list(nonmem_train), list(
+        nonmem_test)
 
     for i in range(len(mem_train)):
         mem_train[i] = mem_train[i] + (1,)
@@ -695,7 +703,7 @@ def get_attack_dataset_without_shadow(train_set, test_set, batch_size):
         nonmem_test[i] = nonmem_test[i] + (0,)
     for i in range(len(mem_test)):
         mem_test[i] = mem_test[i] + (1,)
-        
+
     attack_train = mem_train + nonmem_train
     attack_test = mem_test + nonmem_test
 
@@ -727,7 +735,7 @@ def get_attack_dataset_with_shadow(target_train, target_test, shadow_train, shad
     non_mem_train, _ = torch.utils.data.random_split(nonmem_train, [train_length, len(nonmem_train) - train_length])
     mem_test, _ = torch.utils.data.random_split(mem_test, [test_length, len(mem_test) - test_length])
     non_mem_test, _ = torch.utils.data.random_split(nonmem_test, [test_length, len(nonmem_test) - test_length])
-    
+
     attack_train = mem_train + non_mem_train
     attack_test = mem_test + non_mem_test
 
@@ -746,7 +754,7 @@ def attack_mode0(TARGET_PATH, SHADOW_PATH, ATTACK_PATH, device, attack_trainload
     ATTACK_SETS = ATTACK_PATH + "_meminf_attack_mode0_"
 
 
-    attack = attack_for_blackbox(SHADOW_PATH, TARGET_PATH, ATTACK_SETS, 
+    attack = attack_for_blackbox(SHADOW_PATH, TARGET_PATH, ATTACK_SETS,
                                 attack_trainloader, attack_testloader, target_model, shadow_model, attack_model, device)
 
     if get_attack_set:
@@ -770,7 +778,7 @@ def attack_mode0(TARGET_PATH, SHADOW_PATH, ATTACK_PATH, device, attack_trainload
     return res_train, res_test
 
 # black partial
-def attack_mode1(TARGET_PATH, ATTACK_PATH, device, use_DP, attack_trainloader, attack_testloader, 
+def attack_mode1(TARGET_PATH, ATTACK_PATH, device, use_DP, attack_trainloader, attack_testloader,
                  target_model, attack_model, get_attack_set, num_classes):
     MODELS_PATH = ATTACK_PATH + "_meminf_attack1.pth"
     RESULT_PATH = ATTACK_PATH + "_meminf_attack1.p"
@@ -794,14 +802,14 @@ def attack_mode1(TARGET_PATH, ATTACK_PATH, device, use_DP, attack_trainloader, a
     return res_train, res_test
 
 # white partial
-def attack_mode2(TARGET_PATH, ATTACK_PATH, device, use_DP, attack_trainloader, attack_testloader, 
+def attack_mode2(TARGET_PATH, ATTACK_PATH, device, attack_trainloader, attack_testloader,
                  target_model, attack_model, get_attack_set, num_classes):
     MODELS_PATH = ATTACK_PATH + "_meminf_attack2.pth"
     RESULT_PATH = ATTACK_PATH + "_meminf_attack2.p"
     ATTACK_SETS = ATTACK_PATH + "_meminf_attack_mode2_"
 
-    attack = attack_for_whitebox(TARGET_PATH, TARGET_PATH, ATTACK_SETS, attack_trainloader, attack_testloader, target_model, target_model, attack_model, device, use_DP, num_classes)
-    
+    attack = attack_for_whitebox(TARGET_PATH, TARGET_PATH, ATTACK_SETS, attack_trainloader, attack_testloader, target_model, target_model, attack_model, device, num_classes)
+
     if get_attack_set:
         attack.delete_pickle()
         attack.prepare_dataset()
@@ -826,15 +834,15 @@ def attack_mode3(TARGET_PATH, SHADOW_PATH, ATTACK_PATH, device, attack_trainload
 
     print(attack_mode3.__name__,"1")
     print("TARGET_PATH", TARGET_PATH)
-    attack = attack_for_whitebox(TARGET_PATH, SHADOW_PATH, ATTACK_SETS, attack_trainloader, attack_testloader, 
+    attack = attack_for_whitebox(TARGET_PATH, SHADOW_PATH, ATTACK_SETS, attack_trainloader, attack_testloader,
                                     target_model, shadow_model, attack_model, device, num_classes)
 
-    print(attack_mode3.__name__,"2")    
+    print(attack_mode3.__name__,"2")
     if get_attack_set:
         attack.delete_pickle()
-        print(attack_mode3.__name__,"4")  
+        print(attack_mode3.__name__,"4")
         attack.prepare_dataset()
-        print(attack_mode3.__name__,"5")  
+        print(attack_mode3.__name__,"5")
 
     print(attack_mode3.__name__,"3")
     for i in range(100):
@@ -856,4 +864,3 @@ def get_gradient_size(model):
             gradient_size.append(parameter.shape)
 
     return gradient_size
-    

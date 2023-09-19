@@ -388,11 +388,11 @@ def before_truncation_laplace():
     y1 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu1)) / sigma)
     y2 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu2)) / sigma)
 
-    b=2*mu1*0.8
+    b=2*mu1*0.9
 
     # 绘制图形
-    plt.plot(x, y1, label="$Lap(0,\mu/\epsilon)$",color='orange')
-    plt.plot(x, y2, label="$Lap(\mu,\mu/\epsilon)$",color='blue')
+    plt.plot(x, y1, label="$Lap(-C,2C/\epsilon)$",color='orange')
+    plt.plot(x, y2, label="$Lap(C,2C/\epsilon)$",color='blue')
     # plt.axvline(x=p, color='black', linestyle='--', zorder=3)
     # plt.axvline(x=-p, color='black', linestyle='--', zorder=3)
 
@@ -431,8 +431,8 @@ def before_truncation_laplace():
     plt.axvline(x=b, color='black', linestyle='--', zorder=3)
 
     #自定义横坐标刻度
-    t=[b,-0.1,0.1]
-    x_labels = [ 'b', '0', '$\mu$']
+    t=[x_point2,b,-0.1,0.1]
+    x_labels = ['$x$','b', '-C', 'C']
     plt.xticks(t, x_labels)
 
     # 不显示刻度
@@ -453,7 +453,7 @@ def after_truncation_laplace():
     sigma = 2 * mu2 * noise_scale
     # 生成x轴坐标点
     x = np.linspace(-1, 1, 500)
-    b = 2 * mu1 * 0.8
+    b = 2 * mu1 * 0.9
 
     s1 = laplace.cdf(b, loc=mu1, scale=noise_scale)
     s2 = laplace.cdf(b, loc=mu2, scale=noise_scale)
@@ -463,8 +463,8 @@ def after_truncation_laplace():
     y2 = (1/s2)*(1 / (2 * sigma)) * np.exp(-(abs(x_limit - mu2)) / sigma)
 
     # 绘制图形
-    plt.plot(x_limit, y1, label="$f(x,0,\mu/\epsilon,-\infty,b)$", color='orange')
-    plt.plot(x_limit, y2, label="$f(x,\mu,\mu/\epsilon,-\infty,b)$", color='blue')
+    plt.plot(x_limit, y1, label="$f(x,-C,2C/\epsilon,-\infty,b)$", color='orange')
+    plt.plot(x_limit, y2, label="$f(x,C,2C/\epsilon,-\infty,b)$", color='blue')
 
 
     # 标记点
@@ -490,8 +490,8 @@ def after_truncation_laplace():
     plt.plot(line_x, line_y, '--')
 
     # 自定义横坐标刻度
-    t = [b, -0.1]
-    x_labels = ['b', '0']
+    t = [x_point2,b, -0.1,0.1]
+    x_labels = ["$x$",'b', '-C','C']
     plt.xticks(t, x_labels)
 
     # 不显示刻度
