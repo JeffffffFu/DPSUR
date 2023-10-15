@@ -103,8 +103,8 @@ privacy budget is used after a fixed number of epochs.
 
 ## comparison algorithms
 You can run other comparison algorithms by simply modifying the '--algorithm=[algorithm name]' parameter, such as DPSGD-HF, DPSGD-TS, DPAGD and DPSGD.
-<span style="font-weight:bold">Please note that we have not included the DPIS code as the author currently does not grant permission for public release. 
-If you are interested, you may contact the author directly. <span>
+<span style="font-weight:bold">Please note that we successfully reached the authors of DPIS and obtained their source code. However, we have not published it on our GitHub repository, 
+as the author of DPIS has not granted us permission for public release. If you are interested in DPIS, you may wish to contact the author directly. <span>
 
 In addition, for the DPAGD algorithm, it comes with its own set of additional parameters. 
 In this code, we have adhered to the recommendations provided in the original paper and used the same symbols for ease of understanding. 
