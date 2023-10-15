@@ -72,7 +72,7 @@ def train_with_dp_agd(model, train_loader, optimizer,C_t,sigma_t,C_v,sigma_v,dev
         model_parameters_dict = model.state_dict()
 
 
-        learning_rate = np.linspace(0, 5, 10 + 1)  # 学习率从0-2.0分成20份
+        learning_rate = np.linspace(0, 5, 20 + 1)  # 学习率从0-2.0分成20份
 
         min_index=0
 

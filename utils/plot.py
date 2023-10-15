@@ -349,8 +349,8 @@ def after_truncation():
     y1=dist1.pdf(x)
     y2=dist2.pdf(x)
 
-    plt.plot(x, y1, label="$f(x,0,\mu\sigma,a,b)$",color='orange')
-    plt.plot(x, y2, label="$f(x,\mu,\mu\sigma,a,b)$",color='blue')
+    plt.plot(x, y1, label="$f_{Gau}(x,0,\mu\sigma,a,b)$",color='orange')
+    plt.plot(x, y2, label="$f_{Gau}(x,\mu,\mu\sigma,a,b)$",color='blue')
 
     # 填充区域
     # mask = (x <= -0.1)
@@ -502,6 +502,140 @@ def after_truncation_laplace():
     plt.grid(True)
     plt.show()
 
+
+#这个是选择性发布的概率图表示
+def before_truncation_laplace2():
+    # 均值和标准差
+    mu1, mu2 = -0.1, 0.1
+    noise_scale=1.1
+    sigma = 2*mu2*noise_scale
+    # 生成x轴坐标点
+    x = np.linspace(-1, 1, 500)
+
+    # 计算概率密度函数
+    y1 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu1)) / sigma)
+    y2 = (1 / (2 * sigma)) * np.exp(-(abs(x - mu2)) / sigma)
+
+    b=2*mu1*0.9
+
+    # 绘制图形
+    plt.plot(x, y1, label="$Lap(0,\lambda)$",color='orange')
+    plt.plot(x, y2, label="$Lap(\mu,\lambda)$",color='blue')
+    # plt.axvline(x=p, color='black', linestyle='--', zorder=3)
+    # plt.axvline(x=-p, color='black', linestyle='--', zorder=3)
+
+    a=float('-inf')
+    a=10*mu1*0.9
+
+    # 填充区域
+    # mask = (x >= a) & (x <= b)
+    # plt.fill_between(x[mask], 0, y1[mask], color='orange', alpha=0.3, zorder=2)
+    # plt.fill_between(x[mask], 0, y2[mask], color='blue', alpha=0.3, zorder=2)
+
+    # 计算填充区域的面积
+    # area1 = quad(lambda a: (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((a - mu1) ** 2) / (2 * sigma ** 2)), -np.inf, b)[0]
+    # area2 = quad(lambda a: (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((a - mu2) ** 2) / (2 * sigma ** 2)), -np.inf, b)[0]
+
+    # print("mu1的面积：",area1)
+    # print("mu2的面积：",area2)
+
+    # # 标记点
+    # x_point1 = -0.3
+    # y_point1 = (1 / (2 * sigma)) * np.exp(-(abs(x_point1 - mu1)) / sigma)
+    # plt.scatter(x_point1, y_point1, color='black', zorder=3)
+    # plt.annotate("$P_0$", (x_point1, y_point1), textcoords='offset points', xytext=(-10, 10), ha='center',color="black", zorder=10, fontsize=14)
+    #
+    # x_point2 = -0.3
+    # y_point2 = (1 / (2 * sigma)) * np.exp(-(abs(x_point2 - mu2)) / sigma)
+    # plt.scatter(x_point2, y_point2, color='black', zorder=3)
+    # plt.annotate("$P_1$", (x_point2, y_point2), textcoords='offset points', xytext=(-10, 10), ha='center',color="black", zorder=10, fontsize=14)
+
+
+    # line_y = np.linspace(y_point2, y_point1, 100)
+    # line_x = np.full_like(line_y, x_point2)
+    # plt.plot(line_x, line_y, '--')
+
+    plt.xlabel("Random Variables",fontsize=16)
+    plt.ylabel("Probability",fontsize=16)
+
+    plt.axvline(x=b, color='black', linestyle='--', zorder=3)
+    plt.axvline(x=a, color='black', linestyle='--', zorder=3)
+
+    #自定义横坐标刻度
+    t=[a,b,-0.1,0.1]
+    x_labels = ['a','b', '0', '$\mu$']
+    plt.xticks(t, x_labels)
+
+    # 不显示刻度
+    # plt.xticks([])
+    # plt.yticks([])
+
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def after_truncation_laplace2():
+    from scipy.stats import laplace
+
+    # 均值和标准差
+    mu1, mu2 = -0.1, 0.1
+    noise_scale = 1.1
+    sigma = 2 * mu2 * noise_scale
+    # 生成x轴坐标点
+    x = np.linspace(-1, 1, 500)
+    b = 2 * mu1 * 0.9
+    a = 10 * mu1 * 0.9
+
+    s1 = laplace.cdf(b, loc=mu1, scale=noise_scale)
+    s2 = laplace.cdf(b, loc=mu2, scale=noise_scale)
+    # 计算概率密度函数
+    x_limit2 = x[ x <= b]
+    x_limit = x_limit2[x_limit2 >= a]
+
+    y1 = (1/s1)*(1 / (2 * sigma)) * np.exp(-(abs(x_limit - mu1)) / sigma)
+    y2 = (1/s2)*(1 / (2 * sigma)) * np.exp(-(abs(x_limit - mu2)) / sigma)
+
+    # 绘制图形
+    plt.plot(x_limit, y1, label="$f_{Lap}(x,0,\lambda,a,b)$", color='orange')
+    plt.plot(x_limit, y2, label="$f_{Lap}(x,\mu,\lambda,a,b)$", color='blue')
+
+
+    # 标记点
+    # x_point1 = -0.3
+    # y_point1 = (1/s1)*(1 / (2 * sigma)) * np.exp(-(abs(x_point1 - mu1)) / sigma)
+    # plt.scatter(x_point1, y_point1, color='black', zorder=3)
+    # plt.annotate("$P_0^{'}$", (x_point1, y_point1), textcoords='offset points', xytext=(-10, 10), ha='center', color="black",
+    #              zorder=10, fontsize=14)
+    #
+    # x_point2 = -0.3
+    # y_point2 = (1/s2)*(1 / (2 * sigma)) * np.exp(-(abs(x_point2 - mu2)) / sigma)
+    # plt.scatter(x_point2, y_point2, color='black', zorder=3)
+    # plt.annotate("$P_1^{'}$", (x_point2, y_point2), textcoords='offset points', xytext=(-10, 10), ha='center', color="black",
+    #              zorder=10, fontsize=14)
+
+    plt.xlabel("Random Variables", fontsize=16)
+    plt.ylabel("Probability", fontsize=16)
+
+    plt.axvline(x=b, color='black', linestyle='--', zorder=3)
+    plt.axvline(x=a, color='black', linestyle='--', zorder=3)
+
+    # line_y = np.linspace(y_point2, y_point1, 100)
+    # line_x = np.full_like(line_y, x_point2)
+    # plt.plot(line_x, line_y, '--')
+
+    # 自定义横坐标刻度
+    t = [a,b, -0.1,0.1]
+    x_labels = ['a','b', '0','$\mu$']
+    plt.xticks(t, x_labels)
+
+    # 不显示刻度
+    # plt.xticks([])
+    # plt.yticks([])
+
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 def test_lap():
     import numpy as np
@@ -664,11 +798,13 @@ def convergence_speed_cifar10():
     plt.show()
 
 if __name__=="__main__":
-    #plot_acc()
+    # plot_acc()
     #plot_erf()
     # convergence_speed_cifar10()
     # C_impact()
     # alpha_impact()
     # lr_impact()
-    before_truncation_laplace()
-    after_truncation_laplace()
+    before_truncation_laplace2()
+    after_truncation_laplace2()
+    # after_truncation()
+    # before_truncation()
