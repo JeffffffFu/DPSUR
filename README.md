@@ -3,7 +3,16 @@
 
 *DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release*</br>
 
-
+## Citations
+The details of this pipeline are described in the following paper. If you use this code in your work, please kindly cite it. Thanks.
+```bash
+@article{fu2023dpsur,
+  title={DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release},
+  author={Fu, Jie and Ye, Qingqing and Hu, Haibo and Chen, Zhili and Wang, Lulu and Wang, Kuncan and Xun, Ran},
+  journal={arXiv preprint arXiv:2311.14056},
+  year={2023}
+}
+```
 
 ## Installation
 
@@ -162,3 +171,5 @@ Our target model and training parameters are consistent with those described abo
 We can run MIA through adding the following to the above settings:
 ```bash
 -- MIA=True
+
+
