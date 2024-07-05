@@ -1,16 +1,23 @@
 # DPSUR
 
-
 *DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release*</br>
+
+This repository is the official implementation of the paper:
+[DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release](https://arxiv.org/pdf/2311.14056)
+Accepted at USENIX Security 2023
 
 ## Citations
 The details of this pipeline are described in the following paper. If you use this code in your work, please kindly cite it. Thanks.
 ```bash
-@article{fu2023dpsur,
+@article{fu2024dpsur,
   title={DPSUR: Accelerating Differentially Private Stochastic Gradient Descent Using Selective Update and Release},
-  author={Fu, Jie and Ye, Qingqing and Hu, Haibo and Chen, Zhili and Wang, Lulu and Wang, Kuncan and Xun, Ran},
-  journal={arXiv preprint arXiv:2311.14056},
-  year={2023}
+  author={Fu, Jie and Ye, Qingqing and Hu, Haibo and Chen, Zhili and Wang, Lulu and Wang, Kuncan and Ran, Xun},
+  journal={Proceedings of the VLDB Endowment},
+  volume={17},
+  number={6},
+  pages={1200--1213},
+  year={2024},
+  publisher={VLDB Endowment}
 }
 ```
 
